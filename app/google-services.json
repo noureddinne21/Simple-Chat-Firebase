@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "723597739474",
+    "project_id": "chat-app-a2815",
+    "storage_bucket": "chat-app-a2815.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:723597739474:android:94fbf3b15fe469c061b40b",
+        "android_client_info": {
+          "package_name": "com.nouroeddinne.chatapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBGAuhZsudNuwYFpC23gOravkZzszoYoI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
