@@ -19,9 +19,6 @@
             android:name=".ProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".messegeActivity"
-            android:exported="false" />
-        <activity
             android:name=".HomeActivity"
             android:exported="false" />
         <activity

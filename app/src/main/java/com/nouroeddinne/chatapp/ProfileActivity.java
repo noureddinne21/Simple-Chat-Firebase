@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResult;
@@ -99,13 +100,27 @@ public class ProfileActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences(Utels.SHAREDPREFERNCES_FILENAME_INFO, Context.MODE_PRIVATE);
 
-        getInfo();
+        Bundle extras = getIntent().getExtras();
+        if (extras!=null && extras.getString("addGroup")!=null){
+            button.setText("Add New Group");
+        }else {
+            getInfo();
+            button.setText("Save Changes");
+        }
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String name = editText.getText().toString().trim();
-                edit(name);
+
+                if (extras!=null && extras.getString("addGroup")!=null){
+                    addGroup(name);
+                }else {
+                    edit(name);
+                }
+
+
+
             }
         });
 
@@ -180,7 +195,33 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
 
+    public void addGroup(String name){
 
+        String key = databaseReferencere.child(Utels.FIREBASE_TABLE_GROUP).push().getKey();
+        final String[] urlImg = new String[1];
+        databaseReferencere.child(Utels.FIREBASE_TABLE_GROUP).child(key).child("Name").setValue(name);
+        databaseReferencere.child(Utels.FIREBASE_TABLE_GROUP).child(key).child("uid").setValue(key);
+        databaseReferencere.child(Utels.FIREBASE_TABLE_MEMBER_GROUP).child(key).child(auth.getUid()).setValue("true");
+
+        if (img){
+            UUID randomID = UUID.randomUUID();
+            String image = "images/"+randomID+".jpg";
+            storageReference.child(image).putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    StorageReference mystorageReference = fs.getReference(image);
+                    mystorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            urlImg[0] = uri.toString();
+                            databaseReferencere.child(Utels.FIREBASE_TABLE_GROUP).child(key).child("img").setValue(urlImg[0]);
+                        }
+                    });
+                }
+            });
+        }
+
+    }
 
 
 

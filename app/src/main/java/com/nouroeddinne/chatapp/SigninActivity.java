@@ -136,6 +136,7 @@ public class SigninActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(SigninActivity.this, loginActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
 
@@ -160,8 +161,10 @@ public class SigninActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
                     databaseReferencere.child(Utels.FIREBASE_TABLE_USERS).child(auth.getUid()).child(Utels.FIREBASE_TABLE_USERS_NAME).setValue(name);
+                    databaseReferencere.child(Utels.FIREBASE_TABLE_USERS).child(auth.getUid()).child(Utels.FIREBASE_TABLE_USERS_UID).setValue(auth.getUid());
                     databaseReferencere.child(Utels.FIREBASE_TABLE_USERS).child(auth.getUid()).child(Utels.FIREBASE_TABLE_USERS_EMAIL).setValue(email);
                     databaseReferencere.child(Utels.FIREBASE_TABLE_USERS).child(auth.getUid()).child(Utels.FIREBASE_TABLE_USERS_PASSWORD).setValue(password);
+                    databaseReferencere.child(Utels.FIREBASE_TABLE_USERS).child(auth.getUid()).child("online").setValue(false);
                     if (img){
                         UUID randomID = UUID.randomUUID();
                         String image = "images/"+randomID+".jpg";

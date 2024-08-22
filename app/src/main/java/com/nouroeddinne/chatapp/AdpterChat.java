@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,19 +33,20 @@ public class AdpterChat extends RecyclerView.Adapter<AdpterChat.ViewHolder>{
     FirebaseDatabase db;
     FirebaseUser firebaseUser;
 
-    String from;
+    String from,type;
     boolean status = false;
     int fromInt = 1;
     int toInt = 2;
 
-    public AdpterChat(List<Model> listUsers, Context context,String from) {
+    public AdpterChat(List<Model> listUsers, Context context,String from,String type) {
         this.listUsers = listUsers;
         this.context = context;
         this.from = from;
+        this.type = type;
+
         db = FirebaseDatabase.getInstance();
         databaseReferencere = db.getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
     }
 
     @NonNull
@@ -65,6 +67,11 @@ public class AdpterChat extends RecyclerView.Adapter<AdpterChat.ViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.text.setText(listUsers.get(position).getMsg());
+        if (type.equals("chat")){
+            holder.name.setVisibility(View.GONE);
+        }else {
+            holder.name.setText(listUsers.get(position).getName());
+        }
     }
 
 
@@ -74,23 +81,33 @@ public class AdpterChat extends RecyclerView.Adapter<AdpterChat.ViewHolder>{
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
-        private TextView text;
+        private TextView text,name;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             text = itemView.findViewById(R.id.textView2);
+            name = itemView.findViewById(R.id.textView);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
 
-        if (listUsers.get(position).from.equals(from)){
+//        if (listUsers.get(position).from.equals(from)){
+//            status = true;
+//            return fromInt;
+//        }else {
+//            status = false;
+//            return toInt;
+//        }
+
+        if (listUsers.get(position).from.equals(firebaseUser.getUid())){
             status = true;
             return fromInt;
         }else {
             status = false;
             return toInt;
         }
+
 
     }
 

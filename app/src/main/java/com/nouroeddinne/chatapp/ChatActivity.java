@@ -1,6 +1,8 @@
 package com.nouroeddinne.chatapp;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -47,11 +49,13 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseDatabase db;
     FirebaseUser firebaseUser;
 
-    String to="",from="";
+    String to="",from="",type="";
 
     RecyclerView.Adapter adapter;
     List<Model> listMsgs  = new ArrayList<>();
 
+    SharedPreferences sharedPreferences;
+    String name;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -80,10 +84,28 @@ public class ChatActivity extends AppCompatActivity {
         if (extras!=null){
             to = extras.getString("to");
             from = extras.getString("from");
-            Log.d("TAG", "onCreate: "+from+" "+to);
+            type = extras.getString("type");
+            Log.d("TAG", "onCreate: "+from+" "+to+" "+type);
         }
 
-
+        sharedPreferences = getSharedPreferences(Utels.SHAREDPREFERNCES_FILENAME_INFO, Context.MODE_PRIVATE);
+        if (sharedPreferences.getString(Utels.SHAREDPREFERNCES_NAME,null)==null){
+            Log.d("TAG", "onCreate: null name");
+            databaseReferencere.child(Utels.FIREBASE_TABLE_USERS).child(firebaseUser.getUid()).child(Utels.FIREBASE_TABLE_USERS_NAME).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    name= String.valueOf(snapshot.getValue());
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(Utels.SHAREDPREFERNCES_NAME,name);
+                    editor.apply();
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                }
+            });
+        }else {
+            name = sharedPreferences.getString(Utels.SHAREDPREFERNCES_NAME,null);
+        }
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,20 +125,43 @@ public class ChatActivity extends AppCompatActivity {
 
         long currentTimeMillis = Instant.now().toEpochMilli();
 
-        String key = databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).child(String.valueOf(currentTimeMillis)).getKey();
-        Map<String,Object> data = new HashMap<>();
-        data.put(Utels.FIREBASE_TABLE_MESSAGES_MSG,msg);
-        data.put(Utels.FIREBASE_TABLE_MESSAGES_FROM,from);
-        databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).child(key).setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(to).child(from).child(key).setValue(data);
-                    editText.setText("");
+        if (type.equals("group")){
 
+            String key = databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).child(String.valueOf(currentTimeMillis)).getKey();
+            Map<String,Object> data = new HashMap<>();
+            data.put(Utels.FIREBASE_TABLE_MESSAGES_MSG,msg);
+            data.put(Utels.FIREBASE_TABLE_MESSAGES_FROM,from);
+            data.put(Utels.FIREBASE_TABLE_USERS_NAME,name);
+            databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).child(key).setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(to).child(key).setValue(data);
+                        editText.setText("");
+                    }
                 }
-            }
-        });
+            });
+
+        }else {
+
+            String key = databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).child(String.valueOf(currentTimeMillis)).getKey();
+            Map<String,Object> data = new HashMap<>();
+            data.put(Utels.FIREBASE_TABLE_MESSAGES_MSG,msg);
+            data.put(Utels.FIREBASE_TABLE_MESSAGES_FROM,from);
+            data.put(Utels.FIREBASE_TABLE_USERS_NAME,name);
+            databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).child(key).setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(to).child(from).child(key).setValue(data);
+                        editText.setText("");
+                    }
+                }
+            });
+
+        }
+
+
 
     }
 
@@ -124,42 +169,92 @@ public class ChatActivity extends AppCompatActivity {
 
     public void Msgs(){
 
-        databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).addChildEventListener(new ChildEventListener() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+        if (type.equals("group")){
 
-                Model m = snapshot.getValue(Model.class);
-                if (m != null) {
-                    listMsgs.add(m);
-                    adapter.notifyDataSetChanged();
-                    recyclerView.scrollToPosition(listMsgs.size() - 1);
+            databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(to).addChildEventListener(new ChildEventListener() {
+                @SuppressLint("NotifyDataSetChanged")
+                @Override
+                public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                    Model m = snapshot.getValue(Model.class);
+                    if (m != null) {
+                        Toast.makeText(ChatActivity.this, ""+m.getMsg(), Toast.LENGTH_SHORT).show();
+                        listMsgs.add(m);
+                        adapter.notifyDataSetChanged();
+                        recyclerView.scrollToPosition(listMsgs.size() - 1);
+                    }
+
                 }
 
-            }
+                @Override
+                public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
 
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                }
 
-            }
+                @Override
+                public void onChildRemoved(@NonNull DataSnapshot snapshot) {
 
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                }
 
-            }
+                @Override
+                public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
 
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                }
+            });
 
-            }
-        });
-        adapter = new AdpterChat(listMsgs,ChatActivity.this,from);
-        recyclerView.setAdapter(adapter);
+            adapter = new AdpterChat(listMsgs,ChatActivity.this,to,type);
+            recyclerView.setAdapter(adapter);
+
+        }else {
+
+            databaseReferencere.child(Utels.FIREBASE_TABLE_MESSAGES).child(from).child(to).addChildEventListener(new ChildEventListener() {
+                @SuppressLint("NotifyDataSetChanged")
+                @Override
+                public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                    Model m = snapshot.getValue(Model.class);
+                    if (m != null) {
+                        Toast.makeText(ChatActivity.this, ""+m.getMsg(), Toast.LENGTH_SHORT).show();
+                        listMsgs.add(m);
+                        adapter.notifyDataSetChanged();
+                        recyclerView.scrollToPosition(listMsgs.size() - 1);
+                    }
+
+                }
+
+                @Override
+                public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                }
+
+                @Override
+                public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+            adapter = new AdpterChat(listMsgs,ChatActivity.this,from,type);
+            recyclerView.setAdapter(adapter);
+
+        }
+
+
+
 
 
     }

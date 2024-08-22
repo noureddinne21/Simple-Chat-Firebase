@@ -4,8 +4,14 @@ public class Utels {
 
     public static final String FIREBASE_TABLE_USERS="Users";
     public static final String FIREBASE_TABLE_MESSAGES="messages";
+    public static final String FIREBASE_TABLE_GROUP="Group";
+    //public static final String FIREBASE_TABLE_GROUP_MEMBER="Group Member";
+    public static final String FIREBASE_TABLE_MEMBER_GROUP="Member Group";
+    public static final String FIREBASE_TABLE_MEMBER_FRINDE="Member Frinde";
+
 
     public static final String FIREBASE_TABLE_USERS_NAME="Name";
+    public static final String FIREBASE_TABLE_USERS_UID="uid";
     public static final String FIREBASE_TABLE_USERS_EMAIL="email";
     public static final String FIREBASE_TABLE_USERS_PASSWORD="password";
     public static final String FIREBASE_TABLE_USERS_IMAGE="img";

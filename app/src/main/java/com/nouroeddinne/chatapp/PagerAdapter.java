@@ -1,5 +1,7 @@
 package com.nouroeddinne.chatapp;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -10,14 +12,15 @@ import java.util.ArrayList;
 
 public class PagerAdapter extends FragmentStateAdapter {
 
-    ArrayList<MyTab> list = new ArrayList<MyTab>();
+    ArrayList<ModelPager> list = new ArrayList<ModelPager>();
 
     public PagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
         super(fragmentManager, lifecycle);
     }
 
-    public void addTab(MyTab tab) {
-        list.add(tab);
+    @SuppressLint("NotifyDataSetChanged")
+    public void addTab(ModelPager model) {
+        list.add(model);
         notifyDataSetChanged();
     }
 
@@ -36,9 +39,6 @@ public class PagerAdapter extends FragmentStateAdapter {
     public int getItemCount() {
         return list.size();
     }
-
-
-
 
 
 

@@ -1,4 +1,4 @@
-package Model;
+package com.nouroeddinne.chatapp;
 
 import androidx.fragment.app.Fragment;
 

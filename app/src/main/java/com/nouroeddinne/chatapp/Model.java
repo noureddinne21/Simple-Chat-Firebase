@@ -4,6 +4,13 @@ public class Model {
 
     String from;
     String msg;
+    String Name;
+
+    public Model(String from, String msg, String name) {
+        this.from = from;
+        this.msg = msg;
+        this.Name = name;
+    }
 
     public Model(String from, String msg) {
         this.from = from;
@@ -11,6 +18,14 @@ public class Model {
     }
 
     public Model() {
+    }
+
+    public String getName() {
+        return Name;
+    }
+
+    public void setName(String Name) {
+        this.Name = Name;
     }
 
     public String getFrom() {
